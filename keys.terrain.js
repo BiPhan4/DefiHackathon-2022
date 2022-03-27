@@ -4,6 +4,6 @@
 module.exports = {
   testnet: {
     mnemonic:
-      "rose affair garlic decorate awesome round upgrade distance novel strong this congress jelly title also trigger proof stand between humble primary short area people",
+      "cactus wash reveal certain neck guard finger dash tired injury piece remember never load illness off butter lumber velvet off allow control anger return",
   },
 };
