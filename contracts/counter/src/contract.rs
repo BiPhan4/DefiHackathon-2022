@@ -7,6 +7,7 @@ use crate::error::ContractError;
 use crate::msg::{ExecuteMsg, InstantiateMsg, totalPayersResponse, QueryMsg, self};
 use crate::state::{State, STATE, BALANCES};
 
+
 // version info for migration info
 const CONTRACT_NAME: &str = "crates.io:counter";
 const CONTRACT_VERSION: &str = env!("CARGO_PKG_VERSION");
@@ -43,6 +44,7 @@ pub fn execute(
     match msg {
         ExecuteMsg::Payup {} => try_payup(deps, info),
         ExecuteMsg::Createaccounts {} => create_accounts(deps, info),
+
     }
 
 }

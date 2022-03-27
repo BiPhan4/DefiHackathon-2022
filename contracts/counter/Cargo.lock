@@ -164,8 +164,10 @@ name = "cw-storage-plus"
 version = "0.8.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "c1e867b9972b83b32e00e878dfbff48299ba26618dabeb19b9c56fae176dc225"
+
 dependencies = [
  "cosmwasm-std",
+ "cw-storage-plus",
  "schemars",
  "serde",
 ]
