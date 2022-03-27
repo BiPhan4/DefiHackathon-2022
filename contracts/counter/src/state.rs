@@ -1,20 +1,23 @@
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 
-use cosmwasm_std::{Uint128, Addr};
-use cw_storage_plus::{Item, Map};
+use cosmwasm_std::Addr;
+use cw_storage_plus::{Item, Map}; //import map and figure out how to use it 
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
 pub struct State {
-    pub storeowner: Addr,
-    pub bill: i32, 
-    pub TotalPayers: i32,
+    pub count: i32,
+    pub owner: Addr,
+}
+
+pub struct User {
+    pub name: String,
+    pub address: Addr,
 }
 
 pub const STATE: Item<State> = Item::new("state");
 
-pub const BALANCES: Map<&Addr, bool> = Map::new("balance");
-
+pub const CUSTOMERS: Map<&str, User> = Map::new("customers"); 
 /*
 add states:
 
