@@ -19,8 +19,8 @@ pub fn instantiate(
     msg: InstantiateMsg,
 ) -> Result<Response, ContractError> {
     let state = State {
-        count: msg.count,
-        owner: info.sender.clone(),
+        storeowner: info.sender.clone(),
+        bill: msg.bill
     };
     set_contract_version(deps.storage, CONTRACT_NAME, CONTRACT_VERSION)?;
     STATE.save(deps.storage, &state)?;
@@ -39,9 +39,9 @@ pub fn execute(
     msg: ExecuteMsg,
 ) -> Result<Response, ContractError> {
     match msg {
-        ExecuteMsg::Increment {} => try_increment(deps),
-        ExecuteMsg::Reset { count } => try_reset(deps, info, count),
+        ExecuteMsg::Payup {} => try_payup(deps, info),
     }
+
 }
 
 pub fn try_increment(deps: DepsMut) -> Result<Response, ContractError> {
@@ -52,15 +52,33 @@ pub fn try_increment(deps: DepsMut) -> Result<Response, ContractError> {
 
     Ok(Response::new().add_attribute("method", "try_increment"))
 }
-pub fn try_reset(deps: DepsMut, info: MessageInfo, count: i32) -> Result<Response, ContractError> {
-    STATE.update(deps.storage, |mut state| -> Result<_, ContractError> {
-        if info.sender != state.owner {
-            return Err(ContractError::Unauthorized {});
+pub fn try_payup(deps: DepsMut, info: MessageInfo: i32) -> Result<Response, ContractError> {
+    let config = STATE.load(deps.storage)?;
+    let deposit_amount: Uint256 = info
+        .funds
+        .iter()
+        .find(|c| c.denom == "uluna")
+        .map(|c| Uint256::from(c.amount))
+        .unwrap_or_else(Uint256::zero);
+        if deposit_amount.is_zero() {
+            return Err(ContractError::ZeroDeposit());
         }
-        state.count = count;
-        Ok(state)
-    })?;
-    Ok(Response::new().add_attribute("method", "reset"))
+    
+        let msg = CosmosMsg::Bank(BankMsg::Send {
+            to_address: config.storeowner,
+            amount: vec![deduct_tax(
+                deps.as_ref(),
+                Coin {
+                    denom: "uusd".to_string(),
+                    amount: balance,
+                },
+            )?],
+        });
+        
+        Ok(Response::new().add_message(msg))
+}
+pub createorder(deps: DepsMut, info: MessageInfo: i32) -> Result<Response, ContractError>){
+
 }
 
 #[cfg_attr(not(feature = "library"), entry_point)]
