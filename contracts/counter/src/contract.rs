@@ -1,11 +1,14 @@
 #[cfg(not(feature = "library"))]
 use cosmwasm_std::entry_point;
-use cosmwasm_std::{Uint128, Coin, BankMsg, CosmosMsg, Uint256, to_binary, Binary, Deps, DepsMut, Env, MessageInfo, Response, StdResult};
+use cosmwasm_std::{Order, Uint128, Coin, BankMsg, CosmosMsg, Uint256, to_binary, Binary, Deps, DepsMut, Env, MessageInfo, Response, StdResult};
 use cw2::set_contract_version;
+
+use cw20::Cw20Coin;
+
 
 use crate::error::ContractError;
 use crate::msg::{CountResponse, ExecuteMsg, InstantiateMsg, QueryMsg};
-use crate::state::{State, STATE};
+use crate::state::{State, STATE, BALANCES, PAYERS};
 
 // version info for migration info
 const CONTRACT_NAME: &str = "crates.io:counter";
@@ -54,7 +57,40 @@ pub fn execute(
 
 }
 
+pub fn create_accounts(deps: &mut DepsMut, accounts: &[Cw20Coin]) -> StdResult<Uint128> {
+    let mut total_supply = Uint128::zero();
+    for row in accounts {
+        let address = deps.api.addr_validate(&row.address)?;
+        BALANCES.save(deps.storage, &address, &row.amount)?;
+        total_supply += row.amount;
+    }
+    Ok(total_supply)
+}
+
 pub fn try_payup(deps: DepsMut, info: MessageInfo) -> Result<Response, ContractError> {
+
+    let all: StdResult<Vec<_>> = BALANCES
+    .range(deps.storage, None, None, Order::Ascending)
+    .collect();
+
+    let payers = all.iter().len();
+
+    /*
+    //- code below takes entire amount from one user
+    our bill is known, and our total payees is known 
+    int each_pays = bill/payers; 
+
+    deposit_amount = 0; 
+
+    for (i = 0 to payers){
+        address_of_a_payer = BALANCES[i].Addr
+        fund taken out = each_pays 
+        deposit_amount += funds taken out
+
+    }
+
+    */
+
     let config = STATE.load(deps.storage)?;
     let deposit_amount: Uint128 = info
         .funds
@@ -62,6 +98,7 @@ pub fn try_payup(deps: DepsMut, info: MessageInfo) -> Result<Response, ContractE
         .find(|c| c.denom == "uluna")
         .map(|c| Uint128::from(c.amount))
         .unwrap_or_else(Uint128::zero);
+
         if deposit_amount.is_zero() {
             return Err(ContractError::ZeroDeposit {});
         }
@@ -82,7 +119,5 @@ pub fn try_payup(deps: DepsMut, info: MessageInfo) -> Result<Response, ContractE
 }
 
 //pub createorder(deps: DepsMut, info: MessageInfo: i32) -> Result<Response, ContractError>{
-
-
 //}
 
