@@ -61,7 +61,7 @@ pub fn try_payup(deps: DepsMut, info: MessageInfo) -> Result<Response, ContractE
     .collect();
 
     STATE.update(deps.storage, |mut state| -> Result<_, ContractError> {
-        state.TotalPayers += all.iter().len();
+        state.TotalPayers += all.unwrap_or_default().len() as i32;
         Ok(state)
     })?;
 
@@ -91,6 +91,14 @@ pub fn try_payup(deps: DepsMut, info: MessageInfo) -> Result<Response, ContractE
         
         Ok(Response::new().add_message(msg))
 }
+
+#[cfg_attr(not(feature = "library"), entry_point)]
+pub fn query(deps: Deps, _env: Env, msg: QueryMsg) -> StdResult<Binary> {
+    match msg {
+        QueryMsg::QueryPayers {} => to_binary(&QueryPayers(deps)?),
+    }
+}
+
 
 pub fn QueryPayers(deps: Deps) -> StdResult<totalPayersResponse> {
     let state = STATE.load(deps.storage)?;

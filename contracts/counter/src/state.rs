@@ -8,7 +8,7 @@ use cw_storage_plus::{Item, Map};
 pub struct State {
     pub storeowner: Addr,
     pub bill: i32, 
-    pub TotalPayers: usize,
+    pub TotalPayers: i32,
 }
 
 
