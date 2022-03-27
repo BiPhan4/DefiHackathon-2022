@@ -5,7 +5,7 @@ use cw2::set_contract_version;
 
 use crate::error::ContractError;
 use crate::msg::{CountResponse, ExecuteMsg, InstantiateMsg, QueryMsg};
-use crate::state::{State, STATE};
+use crate::state::{State, User, STATE, CUSTOMERS};
 
 // version info for migration info
 const CONTRACT_NAME: &str = "crates.io:counter";
@@ -41,8 +41,19 @@ pub fn execute(
     match msg {
         ExecuteMsg::Increment {} => try_increment(deps),
         ExecuteMsg::Reset { count } => try_reset(deps, info, count),
+        //ExecuteMsg::EnterCustomer {} => try_enter_address(deps, info), 
     }
 }
+
+pub fn try_enter_address(deps: DepsMut, info: MessageInfo, entering_address: String) -> Result<Response, ContractError>{
+
+    let entry_address = deps.api.addr_validate(&entering_address)?; 
+
+    //load and save with extra key argument
+    let empty = CUSTOMERS.may_load(deps.storage, &str.to_string());
+    Ok(Response::new()) 
+}
+
 
 pub fn try_increment(deps: DepsMut) -> Result<Response, ContractError> {
     STATE.update(deps.storage, |mut state| -> Result<_, ContractError> {

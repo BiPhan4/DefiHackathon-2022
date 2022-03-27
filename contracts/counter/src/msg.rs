@@ -11,6 +11,7 @@ pub struct InstantiateMsg {
 pub enum ExecuteMsg {
     Increment {},
     Reset { count: i32 }, 
+    EnterCustomer { entering_address: String}
     //we will get user address and names. Then divide bill. Then take money from users and put into our own contract.
     //
 }
