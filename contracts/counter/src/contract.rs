@@ -4,7 +4,7 @@ use cosmwasm_std::{Order, Uint128, Coin, BankMsg, CosmosMsg, Uint256, to_binary,
 use cw2::set_contract_version;
 
 use crate::error::ContractError;
-use crate::msg::{ExecuteMsg, InstantiateMsg, totalPayersResponse, QueryMsg};
+use crate::msg::{ExecuteMsg, InstantiateMsg, totalPayersResponse, QueryMsg, self};
 use crate::state::{State, STATE, BALANCES};
 
 // version info for migration info
@@ -75,9 +75,7 @@ pub fn try_payup(deps: DepsMut, info: MessageInfo) -> Result<Response, ContractE
 
         if deposit_amount.is_zero() {
             return Err(ContractError::ZeroDeposit {});
-        }
-        /*is depost amount 50% of config.bill 
-        */
+        }  
     
         let msg = CosmosMsg::Bank(BankMsg::Send {
             to_address: config.storeowner.to_string(),
@@ -89,7 +87,7 @@ pub fn try_payup(deps: DepsMut, info: MessageInfo) -> Result<Response, ContractE
             ],
         });
         
-        Ok(Response::new().add_message(msg))
+        return Ok(Response::new().add_message(msg));;
 }
 
 #[cfg_attr(not(feature = "library"), entry_point)]
@@ -99,13 +97,27 @@ pub fn query(deps: Deps, _env: Env, msg: QueryMsg) -> StdResult<Binary> {
     }
 }
 
-
 pub fn QueryPayers(deps: Deps) -> StdResult<totalPayersResponse> {
     let state = STATE.load(deps.storage)?;
     Ok(totalPayersResponse { payers: state.TotalPayers})
 }
 
+/* 
 
-//pub createorder(deps: DepsMut, info: MessageInfo: i32) -> Result<Response, ContractError>{
-//}
+        for index in 0..state.TotalPayers{
+            let config = STATE.load(deps.storage)?;
+            let to_be_paid: (state.bill)*(1/(state.TotalPayers));
 
+            let Divided_Amount: Uint = BALANCES[index];
+            let deposit_amount: Uint128 = info
+                .funds
+                .iter()
+                .find(|c| c.denom == "uluna")
+                .map(|c| Uint128::from(c.amount))
+                .unwrap_or_else(Uint128::zero);
+        
+                if deposit_amount.is_zero() {
+                    return Err(ContractError::ZeroDeposit {});
+                } 
+
+    }*/
