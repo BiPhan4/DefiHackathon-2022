@@ -2,8 +2,11 @@
 // to populate secret in CI environment instead of hardcoding
 
 module.exports = {
-  testnet: {
+  custom_tester_1: {
     mnemonic:
-      "cactus wash reveal certain neck guard finger dash tired injury piece remember never load illness off butter lumber velvet off allow control anger return",
+      "shiver position copy catalog upset verify cheap library enjoy extend second peasant basic kit polar business document shrug pass chuckle lottery blind ecology stand",
+  },
+  custom_tester_2: {
+    privateKey: "fGl1yNoUnnNUqTUXXhxH9vJU0htlz9lWwBt3fQw+ixw=",
   },
 };
