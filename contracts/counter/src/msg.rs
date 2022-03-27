@@ -9,7 +9,8 @@ pub struct InstantiateMsg {
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
 #[serde(rename_all = "snake_case")]
 pub enum ExecuteMsg {
-    Payup {}
+    Payup {},
+    Createaccounts{}
 }
 
 
@@ -18,12 +19,14 @@ pub enum ExecuteMsg {
 pub enum QueryMsg {
     // GetCount returns the current count as a json-encoded number
     GetCount {},
+    QueryPayers{},
+
 }
 
-// We define a custom struct for each query response
+//We define a custom struct for each query response
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
-pub struct CountResponse {
-    pub count: i32,
+pub struct totalPayersResponse {
+    pub payers: usize,
 }
 
 //initiate balances?

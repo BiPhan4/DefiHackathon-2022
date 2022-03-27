@@ -1,14 +1,11 @@
 #[cfg(not(feature = "library"))]
 use cosmwasm_std::entry_point;
-use cosmwasm_std::{Order, Uint128, Coin, BankMsg, CosmosMsg, Uint256, to_binary, Binary, Deps, DepsMut, Env, MessageInfo, Response, StdResult};
+use cosmwasm_std::{Order, Uint128, Coin, BankMsg, CosmosMsg, Uint256, to_binary, Binary, Deps, DepsMut, Env, MessageInfo, Response, StdResult, Api, Addr};
 use cw2::set_contract_version;
 
-use cw20::Cw20Coin;
-
-
 use crate::error::ContractError;
-use crate::msg::{CountResponse, ExecuteMsg, InstantiateMsg, QueryMsg};
-use crate::state::{State, STATE, BALANCES, PAYERS};
+use crate::msg::{ExecuteMsg, InstantiateMsg, totalPayersResponse, QueryMsg};
+use crate::state::{State, STATE, BALANCES};
 
 // version info for migration info
 const CONTRACT_NAME: &str = "crates.io:counter";
@@ -23,18 +20,10 @@ pub fn instantiate(
 ) -> Result<Response, ContractError> {
     let state = State {
         storeowner: info.sender.clone(),
-        bill: msg.bill
-        /*logic to split the bill
-        put contract callers into 
-        store owner specifies bill amount
-        and users call join. 
-        Need join function: join function adds their addresses to map
-        then once everyone joins have the pay up method split bill
-        based on map length 
-        
-        */
-
+        bill: msg.bill,
+        TotalPayers: 0,
     };
+
     set_contract_version(deps.storage, CONTRACT_NAME, CONTRACT_VERSION)?;
     STATE.save(deps.storage, &state)?;
 
@@ -53,18 +42,16 @@ pub fn execute(
 ) -> Result<Response, ContractError> {
     match msg {
         ExecuteMsg::Payup {} => try_payup(deps, info),
+        ExecuteMsg::Createaccounts {} => create_accounts(deps, info),
     }
 
 }
 
-pub fn create_accounts(deps: &mut DepsMut, accounts: &[Cw20Coin]) -> StdResult<Uint128> {
-    let mut total_supply = Uint128::zero();
-    for row in accounts {
-        let address = deps.api.addr_validate(&row.address)?;
-        BALANCES.save(deps.storage, &address, &row.amount)?;
-        total_supply += row.amount;
-    }
-    Ok(total_supply)
+pub fn create_accounts(deps: DepsMut, info: MessageInfo) -> Result<Response, ContractError> {
+        let paid = false; 
+        let address = deps.api.addr_validate(&info.sender.to_string())?;
+        BALANCES.save(deps.storage, &address, &paid)?;
+        Ok(Response::new())
 }
 
 pub fn try_payup(deps: DepsMut, info: MessageInfo) -> Result<Response, ContractError> {
@@ -73,23 +60,10 @@ pub fn try_payup(deps: DepsMut, info: MessageInfo) -> Result<Response, ContractE
     .range(deps.storage, None, None, Order::Ascending)
     .collect();
 
-    let payers = all.iter().len();
-
-    /*
-    //- code below takes entire amount from one user
-    our bill is known, and our total payees is known 
-    int each_pays = bill/payers; 
-
-    deposit_amount = 0; 
-
-    for (i = 0 to payers){
-        address_of_a_payer = BALANCES[i].Addr
-        fund taken out = each_pays 
-        deposit_amount += funds taken out
-
-    }
-
-    */
+    STATE.update(deps.storage, |mut state| -> Result<_, ContractError> {
+        state.TotalPayers += all.iter().len();
+        Ok(state)
+    })?;
 
     let config = STATE.load(deps.storage)?;
     let deposit_amount: Uint128 = info
@@ -117,6 +91,12 @@ pub fn try_payup(deps: DepsMut, info: MessageInfo) -> Result<Response, ContractE
         
         Ok(Response::new().add_message(msg))
 }
+
+pub fn QueryPayers(deps: Deps) -> StdResult<totalPayersResponse> {
+    let state = STATE.load(deps.storage)?;
+    Ok(totalPayersResponse { payers: state.TotalPayers})
+}
+
 
 //pub createorder(deps: DepsMut, info: MessageInfo: i32) -> Result<Response, ContractError>{
 //}
